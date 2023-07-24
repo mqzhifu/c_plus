@@ -154,13 +154,16 @@ void main(){
         //一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
         pid_t pid;
         pid = fork();
+        printf("fork new process:\n");
         if(pid < 0){
-            error("accept client , fork error",-9);
+            error("fork error",-9);
         }else if(pid == 0){
+            printf("child process,start recv data......\n");
             //接收数据缓冲区
             char final_recv_data[255];
             while(1){
                 iDataNum = recv(client, buffer, sizeof(final_recv_data), 0);//阻塞接收客户端的数据
+                printf("recv dataNum:%d \n",iDataNum);
                 if(iDataNum < 0)
                 {
                     error("recv error",-6);
@@ -168,6 +171,7 @@ void main(){
                 }
 
                 if(iDataNum == 0){
+                    printf("recv client data end.\n");
                     break;
                 }
 
@@ -188,6 +192,7 @@ void main(){
 
             send_data(client,send_data_arr);
         }else{
+            printf("fork , im father ,nothing to do...\n");
             //父进程，不做任何操作，返回
         }
     }
