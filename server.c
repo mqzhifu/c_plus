@@ -184,7 +184,7 @@ void main(){
 //            }
 
 
-            printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
+            //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
             char send_data_arr[] = "yes,im z!";
 
             send_data(client,send_data_arr);
