@@ -105,7 +105,7 @@ void main(){
     char buffer[200];
     int iDataNum;
     //计数器，无用
-    int cnt = 0;
+    int recvBuffDataCnt = 0;
 
 
     //创建socket
@@ -179,11 +179,11 @@ void main(){
                 strcat(final_recv_data,buffer);
 
                 //这里防止死循环，也是防止C端恶意攻击
-//                cnt++;
-//                if(cnt > 10){
-//                    printf(" err,cnt>10 exec!");
-//                    break;
-//                }
+                recvBuffDataCnt++;
+                if(recvBuffDataCnt > 10){
+                    printf(" err,cnt > 10 exec!\n");
+                    break;
+                }
             }
 
 
