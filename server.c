@@ -33,7 +33,7 @@ int betriebssystem = 2;
 
 //错误处理函数
 void error(char *msg , int code) {
-    fprintf(stderr, "Error: %s  %s", msg, strerror(errno));
+    fprintf(stderr, "Error: %s  %s \n", msg, strerror(errno));
     exit(1);
 }
 
@@ -174,7 +174,7 @@ void main(){
                     printf("recv client data end.\n");
                     break;
                 }
-
+                printf("strcat data \n");
 
                 strcat(final_recv_data,buffer);
 
