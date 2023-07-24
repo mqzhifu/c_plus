@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <unistd.h>
+#include <sys/prctl.h>
+#include <signal.h>
+#include <sys/wait.h>
 //For Windows
 #ifdef _WIN32
 int betriebssystem = 1;
@@ -94,7 +97,14 @@ int send_data(int socket, char *s) {
     return result;
 }
 
-void accept_client(int serverSocket ){
+int printByPid(string msg){
+      pid_t pid ;
+      pid = gettid()
+
+      printf("(%d)%s \n",pid,msg);
+}
+
+int accept_client(int serverSocket ){
     struct  sockaddr_in clientAddr;//accept 中返回的参数
     int     addr_len = sizeof(clientAddr);
     int     client;//clientAddr 对应的 socketFD Id
@@ -112,10 +122,11 @@ void accept_client(int serverSocket ){
     //传出的是客户端地址结构体的实际长度。
     //出错返回-1
 
+    printf("accept_client accept and block...\n");
     client = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&addr_len);
     if(client < 0){
         error("accept",-5);
-        continue;
+        return client;
     }
 
     printf("accept client:%d.\n",client);
@@ -171,6 +182,12 @@ void accept_client(int serverSocket ){
         printf("fork , im father ,nothing to do...\n");
         //父进程，不做任何操作，返回
     }
+
+    return client;
+}
+
+int spawn(){//zygote
+
 }
 
 void main(){
@@ -181,7 +198,7 @@ void main(){
     //创建socket
     serverSocket = open_listener_socket();
 
-	printf("create socket ok.\n");
+	printByPid("create socket ok.");
     //绑定IP端口
     bind_to_port(serverSocket,SERVER_PORT);
 
@@ -198,9 +215,26 @@ void main(){
 
     printf("Listening on port: %d\n", SERVER_PORT);
 
-    while(1){
-        accept_client(serverSocket);
-    }
+//    while(1){
+        for(int i=0;i<2;i++){
+            pid_t pid;
+            pid = fork();
+            if(pid < 0 ){
+                printf("main fork process err.\n");
+            }else if(pid == 0 ){
+                prctl(PR_SET_PDEATHSIG,SIGKILL);
+                printf("main create child process ok.\n");
+                accept_client(serverSocket);
+            }else{
+                printf("main process ,father nothing to do .\n");
+            }
+
+        }
+//    }
+    pid_t pid,wait_pid;
+    int status;
+    wait_pid = wait(&status);
+    printf("wait_pid:%d",wait_pid);
 
 }
 
