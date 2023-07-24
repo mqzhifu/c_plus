@@ -159,16 +159,17 @@ void main(){
         }else if(pid == 0){
             //接收数据缓冲区
             char final_recv_data[255];
-//            while(1){
-                iDataNum = recv(client, buffer, 1024, 0);
+            while(1){
+                iDataNum = recv(client, buffer, sizeof(final_recv_data), 0);//阻塞接收客户端的数据
                 if(iDataNum < 0)
                 {
                     error("recv error",-6);
+                    break;
                 }
 
-//                if(iDataNum == 0){
-//                    break;
-//                }
+                if(iDataNum == 0){
+                    break;
+                }
 
 
                 strcat(final_recv_data,buffer);
@@ -179,7 +180,7 @@ void main(){
 //                    printf(" err,cnt>10 exec!");
 //                    break;
 //                }
-//            }
+            }
 
 
             //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
