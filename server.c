@@ -10,9 +10,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <unistd.h>
-
-#ifdef _WIN32
 //For Windows
+#ifdef _WIN32
 int betriebssystem = 1;
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -100,9 +99,9 @@ void main(){
 	int serverSocket;
     //声明两个套接字 sockaddr_in 结构体变量，分别表示客户端和服务器
     struct sockaddr_in server_addr;
-    struct sockaddr_in clientAddr;
+    struct sockaddr_in clientAddr;//accept 中返回的参数
     int addr_len = sizeof(clientAddr);
-    int client;
+    int client;//clientAddr 对应的 socketFD Id
     char buffer[200];
     int iDataNum;
     //计数器，无用
@@ -133,8 +132,8 @@ void main(){
         //调用accept，会进入阻塞状态,accept返回一个套接字FD，便有两个FD:serverSocket和client
         //serverSocket仍然继续在监听状态，client则负责接收和发送数据
 
-        //clientAddr是一个传出参数，accept返回时，传出客户端的地址和端口号
-        //addr_len是一个传入-传出参数，传入的是调用者提供的缓冲区的clientAddr的长度，以避免缓冲区溢出。
+        //clientAddr 是一个传出参数，accept返回时，传出客户端的地址和端口号
+        //addr_len 是一个传入 传出参数，传入的是调用者提供的缓冲区的 clientAddr 的长度，以避免缓冲区溢出。
         //传出的是客户端地址结构体的实际长度。
         //出错返回-1
 
@@ -152,14 +151,13 @@ void main(){
         printf("IP is %s\n", inet_ntoa(clientAddr.sin_addr));
         printf("Port is %d\n", htons(clientAddr.sin_port));
 
-
-        //定义进程ID变量，启用多进程模式，防止阻塞
+        //一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
         pid_t pid;
         pid = fork();
         if(pid < 0){
-            error("fork error",-9);
+            error("accept client , fork error",-9);
         }else if(pid == 0){
-
+            //接收数据缓冲区
             char final_recv_data[255];
 //            while(1){
                 iDataNum = recv(client, buffer, 1024, 0);
