@@ -4,18 +4,30 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <netdb.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <unistd.h>
 
-
+#ifdef _WIN32
+//For Windows
+int betriebssystem = 1;
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <ws2def.h>
+#pragma comment(lib, "Ws2_32.lib")
+#include <windows.h>
+#include <io.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+int betriebssystem = 2;
+#endif
 
 
 #define SERVER_PORT 5555
@@ -52,7 +64,7 @@ void bind_to_port(int socket, int port) {
 
 
     struct sockaddr_in name;
-    //初始化服务器端的套接字，并用htons和htonl将端口和地址转成网络字节序
+    //初始化服务器端的套接字，并用 htons 和 htonl 将端口和地址转成网络字节序
     name.sin_family = PF_INET;
 //    name.sin_family = AF_INET;
     name.sin_port = (in_port_t)htons(port);
@@ -143,7 +155,7 @@ void main(){
 
         //定义进程ID变量，启用多进程模式，防止阻塞
         pid_t pid;
-        pid = fork()
+        pid = fork();
         if(pid < 0){
             error("fork error",-9);
         }else if(pid == 0){
@@ -169,7 +181,7 @@ void main(){
 //                    printf(" err,cnt>10 exec!");
 //                    break;
 //                }
-            }
+//            }
 
 
             printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
