@@ -96,16 +96,17 @@ int send_data(int socket, char *s) {
 
 void main(){
     //调用socket函数返回的文件描述符
-	int serverSocket;
+	int     serverSocket;
     //声明两个套接字 sockaddr_in 结构体变量，分别表示客户端和服务器
-    struct sockaddr_in server_addr;
-    struct sockaddr_in clientAddr;//accept 中返回的参数
-    int addr_len = sizeof(clientAddr);
-    int client;//clientAddr 对应的 socketFD Id
-    char buffer[200];
-    int iDataNum;
+    struct  sockaddr_in server_addr;
+    struct  sockaddr_in clientAddr;//accept 中返回的参数
+    int     addr_len = sizeof(clientAddr);
+    int     client;//clientAddr 对应的 socketFD Id
+    int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+    char    recvDataBuffer[recvDataBufferMax];
+    int     recvDataLen;
     //计数器，无用
-    int recvBuffDataCnt = 0;
+    int     recvBuffDataCnt = 0;
 
 
     //创建socket
@@ -160,31 +161,35 @@ void main(){
         }else if(pid == 0){
             printf("child process,start recv data......\n");
             //接收数据缓冲区
-            char final_recv_data[255];
-            while(1){
-                iDataNum = recv(client, buffer, sizeof(final_recv_data), 0);//阻塞接收客户端的数据
-                printf("recv dataNum:%d \n",iDataNum);
-                if(iDataNum < 0)
+//            char final_recv_data[255];
+//            while(1){//这里不能循环，recv 会造成阻塞
+                recvDataLen = recv(client, recvDataBuffer, sizeof(recvDataBuffer), 0);//阻塞接收客户端的数据
+                printf("recvDataLen:%d \n",recvDataLen);
+                if(recvDataLen < 0)
                 {
                     error("recv error",-6);
-                    break;
+//                    break;
                 }
 
-                if(iDataNum == 0){
+                if(recvDataLen == 0){
                     printf("recv client data end.\n");
-                    break;
+                    error("recvDataLen == 0",-7);
+//                    break;
                 }
-                printf("strcat data \n");
 
-                strcat(final_recv_data,buffer);
-
-                //这里防止死循环，也是防止C端恶意攻击
-                recvBuffDataCnt++;
-                if(recvBuffDataCnt > 10){
-                    printf(" err,cnt > 10 exec!\n");
-                    break;
+                if(recvDataLen > recvDataBufferMax ){//客户端一次发送过来的数据，大于 buffer
+                    error("recvDataLen > recvDataBufferMax",-8);
                 }
-            }
+//                printf("strcat data \n");
+//                strcat(final_recv_data,buffer);
+//                //这里防止死循环，也是防止C端恶意攻击
+//                recvBuffDataCnt++;
+//                if(recvBuffDataCnt > 10){
+//                    printf(" err,cnt > 10 exec!\n");
+//                    break;
+//                }
+//            }
+                printf("recv  data:%s \n",recvDataBuffer);
 
 
             //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
