@@ -114,6 +114,8 @@ void bind_to_port(int socket, int port) {
     if (c == -1) {
         error("Can't bind to socket",-1);
     }
+
+
 }
 
 int accept_client(int serverSocket ){
@@ -150,7 +152,8 @@ int create_socket(int port){
     {
         error("listen",-3);
     }
-    myPrint("Listening on port: %d", SERVER_PORT);
+
+    myPrint("Listening on port: %d", port);
 
     return serverSocket;
 }
