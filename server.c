@@ -51,7 +51,7 @@ int recv_data(int client ,char recvDataBuffer[] ){
         //接收数据缓冲区
 //            char final_recv_data[255];
 //            while(1){//这里不能循环，recv 会造成阻塞
-            recvDataLen = recv(client, recvDataBuffer, sizeof(recvDataBuffer), 0);//阻塞接收客户端的数据
+            int recvDataLen = recv(client, recvDataBuffer, sizeof(recvDataBuffer), 0);//阻塞接收客户端的数据
             myPrint("recvDataLen:%d",recvDataLen);
             if(recvDataLen < 0)
             {
