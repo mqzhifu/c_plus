@@ -14,7 +14,7 @@
 
 int main()
 {
-	char sendbuf[BUFFER_SIZE]= "im z,r u server?\0";
+    char sendbuf[BUFFER_SIZE]= "im z,r u server?\0";
     char recvbuf[BUFFER_SIZE];
     int sock_cli = socket(AF_INET,SOCK_STREAM, 0);
 
@@ -34,11 +34,11 @@ int main()
     //while (fgets(sendbuf, sizeof(sendbuf), stdin) != NULL)
     //{
 
-        printf("send data.");
-        send(sock_cli, sendbuf, strlen(sendbuf),0); 
+        printf("send data:%s\n",sendbuf);
+        send(sock_cli, sendbuf, strlen(sendbuf),0);
         //if(strcmp(sendbuf,"exit\n")==0)
         //    break;
-        recv(sock_cli, recvbuf, sizeof(recvbuf),0); 
+        recv(sock_cli, recvbuf, sizeof(recvbuf),0);
         fputs(recvbuf, stdout);
 
         memset(sendbuf, 0, sizeof(sendbuf));
@@ -48,5 +48,3 @@ int main()
     close(sock_cli);
     return 0;
 }
-
-
