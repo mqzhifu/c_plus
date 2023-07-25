@@ -13,6 +13,7 @@
 #include <sys/prctl.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <stdarg.h>
 //For Windows
 #ifdef _WIN32
 int betriebssystem = 1;
@@ -34,10 +35,62 @@ int betriebssystem = 2;
 
 #define SERVER_PORT 5555
 
+void  itoa(int num, char* str, int radix)
+{
+    int i = 0;
+    int sum;
+    unsigned int num1 = num;  //如果是负数求补码，必须将他的绝对值放在无符号位中在进行求反码
+    char str1[33] = { 0 };
+    if (num<0) {              //求出负数的补码
+        num = -num;
+        num1 = ~num;
+        num1 += 1;
+    }
+    if (num == 0) {
+        str1[i] = '0';
+
+        i++;
+    }
+    while(num1 !=0) {                      //进行进制运算
+        sum = num1 % radix;
+        str1[i] = (sum > 9) ? (sum - 10) + 'a' : sum + '0';
+        num1 = num1 / radix;
+        i++;
+    }
+    i--;
+    int j = 0;
+    for (i; i >= 0; i--) {               //逆序输出
+        str[i] = str1[j];
+        j++;
+    }
+
+}
+
 //错误处理函数
 void error(char *msg , int code) {
     fprintf(stderr, "Error: %s  %s \n", msg, strerror(errno));
     exit(1);
+}
+
+//int printByPid(char msg[]){
+//      pid_t pid ;
+//      pid = getpid();
+//
+//      printf("(%d)%s \n",pid,msg);
+//}
+
+//方式二
+void myPrint(const char *cmd, ...)
+{
+      pid_t pid ;
+      pid = getpid();
+//    printf("%s %s ", __DATE__, __TIME__);
+    printf("(%d)",pid);
+    va_list args;       //定义一个va_list类型的变量，用来储存单个参数
+    va_start(args,cmd); //使args指向可变参数的第一个参数
+    vprintf(cmd,args);  //必须用vprintf等带V的
+    va_end(args);       //结束可变参数的获取
+    printf("\n");
 }
 
 
@@ -93,16 +146,11 @@ int send_data(int socket, char *s) {
         fprintf(stderr, "%s: %s \n","和客户端通信发生错误",strerror(errno));
     }
 
-    printf("send_data:%s \n",s);
+    myPrint("send_data:%s",s);
     return result;
 }
 
-int printByPid(string msg){
-      pid_t pid ;
-      pid = gettid()
 
-      printf("(%d)%s \n",pid,msg);
-}
 
 int accept_client(int serverSocket ){
     struct  sockaddr_in clientAddr;//accept 中返回的参数
@@ -114,42 +162,33 @@ int accept_client(int serverSocket ){
     //计数器，无用
     int     recvBuffDataCnt = 0;
 
-    //调用accept，会进入阻塞状态,accept返回一个套接字FD，便有两个FD:serverSocket和client
-    //serverSocket仍然继续在监听状态，client则负责接收和发送数据
-
+    //调用 accept，进入阻塞, 返回一个新的套接字FD(client)
     //clientAddr 是一个传出参数，accept返回时，传出客户端的地址和端口号
-    //addr_len 是一个传入 传出参数，传入的是调用者提供的缓冲区的 clientAddr 的长度，以避免缓冲区溢出。
-    //传出的是客户端地址结构体的实际长度。
-    //出错返回-1
-
-    printf("accept_client accept and block...\n");
+    //addr_len 是一个传入 传出参数，传入的是调用者提供的缓冲区的 clientAddr 的长度，以避免缓冲区溢出
+    myPrint("accept_client accept and block...");
     client = accept(serverSocket, (struct sockaddr*)&clientAddr, (socklen_t*)&addr_len);
     if(client < 0){
         error("accept",-5);
         return client;
     }
 
-    printf("accept client:%d.\n",client);
-
+    myPrint("accept client:%d",client);
 
     //inet_ntoa   ip地址转换函数，将网络字节序IP转换为点分十进制IP
     //表达式：char *inet_ntoa (struct in_addr);
-    printf("IP is %s\n", inet_ntoa(clientAddr.sin_addr));
-    printf("Port is %d\n", htons(clientAddr.sin_port));
-
+    myPrint("client %s:%d", inet_ntoa(clientAddr.sin_addr), htons(clientAddr.sin_port));
     //一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
-    pid_t pid;
-    pid = fork();
-    printf("fork new process:\n");
-    if(pid < 0){
-        error("fork error",-9);
-    }else if(pid == 0){
-        printf("child process,start recv data......\n");
+//    pid_t pid = fork();
+//    myPrint("accept fork new process:");
+//    if(pid < 0){
+//        error("accept fork error",-9);
+//    }else if(pid == 0){
+//        myPrint("accept child process,start recv data......");
         //接收数据缓冲区
 //            char final_recv_data[255];
 //            while(1){//这里不能循环，recv 会造成阻塞
             recvDataLen = recv(client, recvDataBuffer, sizeof(recvDataBuffer), 0);//阻塞接收客户端的数据
-            printf("recvDataLen:%d \n",recvDataLen);
+            myPrint("recvDataLen:%d",recvDataLen);
             if(recvDataLen < 0)
             {
                 error("recv error",-6);
@@ -157,7 +196,7 @@ int accept_client(int serverSocket ){
             }
 
             if(recvDataLen == 0){
-                printf("recv client data end.\n");
+                myPrint("recv client data end");
                 error("recvDataLen == 0",-7);
 //                    break;
             }
@@ -174,20 +213,30 @@ int accept_client(int serverSocket ){
 //                    break;
 //                }
 //            }
-            printf("recv  data:%s \n",recvDataBuffer);
+            myPrint("recv  data:%s",recvDataBuffer);
+//            int sleepSecond = 10;
+//            myPrint("sleep:%d",sleepSecond);
+//            sleep(sleepSecond);
         //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
         char send_data_arr[] = "yes,im z!";
         send_data(client,send_data_arr);
-    }else{
-        printf("fork , im father ,nothing to do...\n");
-        //父进程，不做任何操作，返回
-    }
+//    }else{
+//        myPrint("fork , im father ,nothing to do...");//父进程，不做任何操作，返回
+
+//    }
 
     return client;
 }
 
 int spawn(){//zygote
 
+}
+
+void worker_cycle(int serverSocket){
+    prctl(PR_SET_PDEATHSIG,SIGKILL);//父进程退出，子进程也结束
+    while(1){
+        accept_client(serverSocket);
+    }
 }
 
 void main(){
@@ -197,13 +246,10 @@ void main(){
 //    struct  sockaddr_in server_addr;
     //创建socket
     serverSocket = open_listener_socket();
-
-	printByPid("create socket ok.");
+	myPrint("create socket ok.");
     //绑定IP端口
     bind_to_port(serverSocket,SERVER_PORT);
-
-    printf("bind socket ok.\n");
-
+    myPrint("bind socket ok.");
 
     //设置服务器上的socket为监听状态
     //第2个参数：backlog，半连接+已连接，之和
@@ -211,30 +257,63 @@ void main(){
     {
         error("listen",-3);
     }
+    myPrint("Listening on port: %d", SERVER_PORT);
 
-
-    printf("Listening on port: %d\n", SERVER_PORT);
-
-//    while(1){
-        for(int i=0;i<2;i++){
-            pid_t pid;
-            pid = fork();
-            if(pid < 0 ){
-                printf("main fork process err.\n");
-            }else if(pid == 0 ){
-                prctl(PR_SET_PDEATHSIG,SIGKILL);
-                printf("main create child process ok.\n");
-                accept_client(serverSocket);
-            }else{
-                printf("main process ,father nothing to do .\n");
-            }
-
-        }
+    int worker_process_num = 5;//开启几个子进程，用于 accept
+//    int pipe_fd_1[worker_process_num],pipe_fd_2[worker_process_num];//创建 2个 管道，用于父子进程通信
+//    if( pipe(pipe_fd_1) < 0 ){
+//        error("pipe pipe_fd_1 err",-11);
 //    }
-    pid_t pid,wait_pid;
+//
+//    if( pipe(pipe_fd_2) < 0 ){
+//        error("pipe pipe_fd_2 err",-12);
+//    }
+
+    //开始创建子进程 accept
+    for(int i=0 ; i < worker_process_num ; i++){
+        pid_t pid = fork();
+        if(pid < 0 ){
+            myPrint("main fork process err.");
+        }else if(pid == 0 ){
+//            if( i == 0 ){
+//                int pid = (int)getpid();
+//                char pidBuff[100] = {0};
+//
+//                sprintf(pidBuff," im child 0 ,pid:%d ",pid);
+//                printf("%s\n", pidBuff);
+//
+//                close ( pipe_fd_1[0] );
+//                write( pipe_fd_1[1],pidBuff,strlen(pidBuff) );
+//            }
+//
+//            if ( i == 1){
+//                close ( pipe_fd_2[0] );
+//                write( pipe_fd_2[1],"im child 1",strlen("im child 1") );
+//            }
+
+            myPrint("main create child worker process ok.");
+            worker_cycle(serverSocket);
+            break;
+        }else{
+
+//            char buff[100];
+//            if(i == 0){
+//                close ( pipe_fd_1[1] );
+//
+//                int readPipeNum = read(pipe_fd_1[0],buff,sizeof(buff));
+//                printf("read over, n==[%d], buf==[%s]",readPipeNum,buff);
+//            }
+        }
+    }
+//    int childPidList[2] = {0};
+//    int len = sizeof(childPidList)/sizeof(childPidList[0]);
+//    for(int i=0;i<worker_process_num;i++){
+//        myPrint("child pid %d:",childPidList[i]);
+//    }
+
     int status;
-    wait_pid = wait(&status);
-    printf("wait_pid:%d",wait_pid);
+    pid_t wait_pid = wait(&status);
+    myPrint("wait_pid:%d",wait_pid);
 
 }
 
