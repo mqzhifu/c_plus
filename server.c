@@ -36,10 +36,10 @@ int betriebssystem = 2;
 
 //#define SERVER_PORT 5555
 
-int recv_data(int client  ){
-    int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
-    char    recvDataBuffer[recvDataBufferMax];
-    int     recvDataLen;
+char * recv_data(int client ,char* recvDataBuffer,int recvDataBufferNum ){
+//    int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+//    char    recvDataBuffer[recvDataBufferMax];
+//    int     recvDataLen;
 
 //    一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
 //    pid_t pid = fork();
@@ -51,7 +51,7 @@ int recv_data(int client  ){
         //接收数据缓冲区
 //            char final_recv_data[255];
 //            while(1){//这里不能循环，recv 会造成阻塞
-            int recvDataLen = recv(client, recvDataBuffer, sizeof(recvDataBuffer), 0);//阻塞接收客户端的数据
+            int recvDataLen = recv(client, recvDataBuffer,recvDataBufferNum, 0);//阻塞接收客户端的数据
             myPrint("recvDataLen:%d",recvDataLen);
             if(recvDataLen < 0)
             {
@@ -65,9 +65,9 @@ int recv_data(int client  ){
 //                    break;
             }
 
-            if(recvDataLen > recvDataBufferMax ){//客户端一次发送过来的数据，大于 buffer
-                error("recvDataLen > recvDataBufferMax",-8);
-            }
+//            if(recvDataLen > recvDataBufferMax ){//客户端一次发送过来的数据，大于 buffer
+//                error("recvDataLen > recvDataBufferMax",-8);
+//            }
 //                printf("strcat data \n");
 //                strcat(final_recv_data,buffer);
 //            }
@@ -81,23 +81,19 @@ int recv_data(int client  ){
 
 //    }
 
-    return recvDataLen;
-}
-
-int spawn(){//zygote
-
+    return recvDataBuffer;
 }
 
 void worker_cycle(int serverSocket){
     prctl(PR_SET_PDEATHSIG,SIGKILL);//父进程退出，子进程也结束
     while(1){
         int client = accept_client(serverSocket);
-//        int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
-//        char    recvDataBuffer[recvDataBufferMax];
-        int recv_data_num = recv_data(client);
+        int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+        char recvDataBuffer[recvDataBufferMax];
+        char* recv_data_p = recv_data(client, recvDataBuffer,recvDataBufferMax);
 
-//        char send_data_arr[] = "yes,im z!";
-//        send_data(client,send_data_arr);
+        char send_data_arr[] = "yes,im z!";
+        send_data(client,send_data_arr);
     }
 }
 
