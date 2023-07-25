@@ -73,6 +73,17 @@ void myPrint(const char *cmd, ...)
     printf("\n");
 }
 
+// 向客户端发消息
+int send_data(int socket, char *s) {
+    int result = (int)send(socket, s, strlen(s), 0);
+    if (result == -1) {
+        fprintf(stderr, "%s: %s \n","和客户端通信发生错误",strerror(errno));
+    }
+
+    myPrint("send_data:%s",s);
+    return result;
+}
+
 /*
     创建socket函数FD，失败返回-1
     int socket(int domain, int type, int protocol);
@@ -87,11 +98,6 @@ int open_listener_socket() {
     }
     return s;
 }
-
-
-
-
-
 // 绑定端口
 void bind_to_port(int socket, int port) {
     //对于bind，accept之类的函数，里面套接字参数都是需要强制转换成(struct sockaddr *)

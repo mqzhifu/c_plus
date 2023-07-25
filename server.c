@@ -36,28 +36,12 @@ int betriebssystem = 2;
 
 //#define SERVER_PORT 5555
 
-
-
-
-// 向客户端发消息
-int send_data(int socket, char *s) {
-    int result = (int)send(socket, s, strlen(s), 0);
-    if (result == -1) {
-        fprintf(stderr, "%s: %s \n","和客户端通信发生错误",strerror(errno));
-    }
-
-    myPrint("send_data:%s",s);
-    return result;
-}
-
-int recv_data(int client ){
+int recv_data(int client ,char recvDataBuffer[] ){
     int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
-    char    recvDataBuffer[recvDataBufferMax];
-    int     recvDataLen;
-    //计数器，无用
-    int     recvBuffDataCnt = 0;
+//    char    recvDataBuffer[recvDataBufferMax];
+//    int     recvDataLen;
 
-    //一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
+//    一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
 //    pid_t pid = fork();
 //    myPrint("accept fork new process:");
 //    if(pid < 0){
@@ -86,20 +70,12 @@ int recv_data(int client ){
             }
 //                printf("strcat data \n");
 //                strcat(final_recv_data,buffer);
-//                //这里防止死循环，也是防止C端恶意攻击
-//                recvBuffDataCnt++;
-//                if(recvBuffDataCnt > 10){
-//                    printf(" err,cnt > 10 exec!\n");
-//                    break;
-//                }
 //            }
             myPrint("recv  data:%s",recvDataBuffer);
 //            int sleepSecond = 10;
 //            myPrint("sleep:%d",sleepSecond);
 //            sleep(sleepSecond);
         //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
-        char send_data_arr[] = "yes,im z!";
-        send_data(client,send_data_arr);
 //    }else{
 //        myPrint("fork , im father ,nothing to do...");//父进程，不做任何操作，返回
 
@@ -116,7 +92,12 @@ void worker_cycle(int serverSocket){
     prctl(PR_SET_PDEATHSIG,SIGKILL);//父进程退出，子进程也结束
     while(1){
         int client = accept_client(serverSocket);
-        recv_data(client);
+        int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+        char    recvDataBuffer[recvDataBufferMax];
+        int recv_data_num = recv_data(client,recvDataBuffer);
+
+        char send_data_arr[] = "yes,im z!";
+        send_data(client,send_data_arr);
     }
 }
 
