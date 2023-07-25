@@ -36,20 +36,6 @@ int betriebssystem = 2;
 
 //#define SERVER_PORT 5555
 
-/*
-    创建socket函数FD，失败返回-1
-    int socket(int domain, int type, int protocol);
-    参数1：使用的地址类型，一般都是ipv4，AF_INET
-    参数1：套接字类型，tcp：面向连接的稳定数据传输SOCK_STREAM
-    参数3：设置为0
-*/
-int open_listener_socket() {
-    int s = socket(PF_INET, SOCK_STREAM, 0);
-    if (s == -1) {
-        error("Can't open socket",-4);
-    }
-    return s;
-}
 
 
 

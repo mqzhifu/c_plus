@@ -73,24 +73,23 @@ void myPrint(const char *cmd, ...)
     printf("\n");
 }
 
-int create_socket(int port){
-    int     serverSocket;//socketFD
-    //创建socket
-    serverSocket = open_listener_socket();
-    myPrint("create socket ok.");
-    //绑定IP端口
-    bind_to_port(serverSocket,port);
-    myPrint("bind socket ok.");
-
-    //设置服务器上的socket为监听状态.backlog=5
-    if(listen(serverSocket, 5) < 0)
-    {
-        error("listen",-3);
+/*
+    创建socket函数FD，失败返回-1
+    int socket(int domain, int type, int protocol);
+    参数1：使用的地址类型，一般都是ipv4，AF_INET
+    参数1：套接字类型，tcp：面向连接的稳定数据传输SOCK_STREAM
+    参数3：设置为0
+*/
+int open_listener_socket() {
+    int s = socket(PF_INET, SOCK_STREAM, 0);
+    if (s == -1) {
+        error("Can't open socket",-4);
     }
-    myPrint("Listening on port: %d", SERVER_PORT);
-
-    return serverSocket;
+    return s;
 }
+
+
+
 
 
 // 绑定端口
@@ -135,4 +134,23 @@ int accept_client(int serverSocket ){
     myPrint("accept client:%d  %s:%d",client,inet_ntoa(clientAddr.sin_addr), htons(clientAddr.sin_port));
 
     return client;
+}
+
+int create_socket(int port){
+    int     serverSocket;//socketFD
+    //创建socket
+    serverSocket = open_listener_socket();
+    myPrint("create socket ok.");
+    //绑定IP端口
+    bind_to_port(serverSocket,port);
+    myPrint("bind socket ok.");
+
+    //设置服务器上的socket为监听状态.backlog=5
+    if(listen(serverSocket, 5) < 0)
+    {
+        error("listen",-3);
+    }
+    myPrint("Listening on port: %d", SERVER_PORT);
+
+    return serverSocket;
 }
