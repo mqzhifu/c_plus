@@ -36,10 +36,10 @@ int betriebssystem = 2;
 
 //#define SERVER_PORT 5555
 
-int recv_data(int client ,char recvDataBuffer[] ){
+int recv_data(int client  ){
     int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
-//    char    recvDataBuffer[recvDataBufferMax];
-//    int     recvDataLen;
+    char    recvDataBuffer[recvDataBufferMax];
+    int     recvDataLen;
 
 //    一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
 //    pid_t pid = fork();
@@ -81,7 +81,7 @@ int recv_data(int client ,char recvDataBuffer[] ){
 
 //    }
 
-    return client;
+    return recvDataLen;
 }
 
 int spawn(){//zygote
@@ -92,12 +92,12 @@ void worker_cycle(int serverSocket){
     prctl(PR_SET_PDEATHSIG,SIGKILL);//父进程退出，子进程也结束
     while(1){
         int client = accept_client(serverSocket);
-        int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
-        char    recvDataBuffer[recvDataBufferMax];
-        int recv_data_num = recv_data(client,recvDataBuffer);
+//        int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+//        char    recvDataBuffer[recvDataBufferMax];
+        int recv_data_num = recv_data(client);
 
-        char send_data_arr[] = "yes,im z!";
-        send_data(client,send_data_arr);
+//        char send_data_arr[] = "yes,im z!";
+//        send_data(client,send_data_arr);
     }
 }
 

@@ -139,7 +139,7 @@ int accept_client(int serverSocket ){
         return client;
     }
 
-    myPrint("accept client:%d  %s:%d",client,inet_ntoa(clientAddr.sin_addr), htons(clientAddr.sin_port));
+    myPrint("accept client:%d , %s:%d",client,inet_ntoa(clientAddr.sin_addr), htons(clientAddr.sin_port));
 
     return client;
 }
