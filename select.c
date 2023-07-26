@@ -36,7 +36,7 @@ int betriebssystem = 2;
 
 void main(){
     int serverSocket = create_socket(5555);
-    int max_fd = serverSocket;
+    int max_fd = serverSocket;//设置最大值
     myPrint("serverSocketFD:%d",serverSocket);
 
     int select_rs, nfds = 0;
@@ -48,11 +48,11 @@ void main(){
     FD_ZERO(&err_set);
     // 把 socketFD 加入到 集合中
     FD_SET(serverSocket, &read_set);
-    //设置最大值
-    maxFD = serverSocket;
+
+//    maxFD = serverSocket;
     //开始循环
     while(1){
-        select_rs = select(maxFD + 1, &read_set, &write_set, &err_set, NULL);
+        select_rs = select(max_fd + 1, &read_set, &write_set, &err_set, NULL);
         myPrint("select wake up~");
         if (r == -1 && errno == EINTR){
             error("select_rs err",-400);
@@ -64,14 +64,14 @@ void main(){
 
         if (FD_ISSET(serverSocket, &read_set)) {
             int client = accept_client(serverSocket);
-            //maxFD = client
-            maxFD++;
+            //max_fd = client
+            max_fd++;
             FD_SET(client, &read_set);
             FD_SET(client, &write_set);
             FD_SET(client, &err_set);
         }
         //0 1 2 标准输入输出异常
-        for(int i=3; i<maxFD+1; i++){
+        for(int i=3; i<max_fd+1; i++){
             if(i == serverSocket ){
                 continue;
             }
@@ -84,7 +84,7 @@ void main(){
         }
 
         //0 1 2 标准输入输出异常
-//        for(int i=3; i<maxFD+1; i++){
+//        for(int i=3; i<max_fd+1; i++){
 //            if(i != serverSocket && FD_ISSET(i, &write_set)){
 //                char send_data_arr[] = "yes,im z!";
 //                send_data(client,send_data_arr);
