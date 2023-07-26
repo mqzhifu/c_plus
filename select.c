@@ -54,7 +54,7 @@ void main(){
     while(1){
         select_rs = select(max_fd + 1, &read_set, &write_set, &err_set, NULL);
         myPrint("select wake up~");
-        if (r == -1 && errno == EINTR){
+        if (select_rs == -1 && errno == EINTR){
             error("select_rs err",-400);
         }
 
