@@ -35,19 +35,65 @@ int betriebssystem = 2;
 #include "util.c"
 
 void main(){
-     int serverSocket = create_socket(5555);
-     int maxfd = serverSocket;
-     printf("%d",serverSocket)
-//     // 初始化检测的读集合
-//     fd_set rdset;
-//     fd_set rdtemp;
-//     // 清零
-//     FD_ZERO(&rdset);
-//     // 将监听的lfd设置到检测的读集合中
-//     FD_SET(serverSocket, &rdset);
-//
-//     while(1){
-//         // rdset 中是委托内核检测的所有的文件描述符
+    int serverSocket = create_socket(5555);
+    int max_fd = serverSocket;
+    myPrint("serverSocketFD:%d",serverSocket);
+
+    int select_rs, nfds = 0;
+    // 设置变量：读/写/异常 集合
+    fd_set read_set, write_set, err_set;
+    // 初始化检测的读/写/异常 集合 ：清零
+    FD_ZERO(&read_set);
+    FD_ZERO(&write_set);
+    FD_ZERO(&err_set);
+    // 把 socketFD 加入到 集合中
+    FD_SET(serverSocket, &read_set);
+    //设置最大值
+    maxFD = serverSocket;
+    //开始循环
+    while(1){
+        select_rs = select(maxFD + 1, &read_set, &write_set, &err_set, NULL);
+        myPrint("select wake up~");
+        if (r == -1 && errno == EINTR){
+            error("select_rs err",-400);
+        }
+
+        if (select_rs == -1) {
+            error("select_rs err",-401);
+        }
+
+        if (FD_ISSET(serverSocket, &read_set)) {
+            int client = accept_client(serverSocket);
+            //maxFD = client
+            maxFD++;
+            FD_SET(client, &read_set);
+            FD_SET(client, &write_set);
+            FD_SET(client, &err_set);
+        }
+        //0 1 2 标准输入输出异常
+        for(int i=3; i<maxFD+1; i++){
+            if(i == serverSocket ){
+                continue;
+            }
+
+            if ( FD_ISSET(i, &read_set ) ){
+                int  recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+                char recvDataBuffer[recvDataBufferMax];
+                char* recv_data_p = recv_data(i, recvDataBuffer,recvDataBufferMax);
+            }
+        }
+
+        //0 1 2 标准输入输出异常
+//        for(int i=3; i<maxFD+1; i++){
+//            if(i != serverSocket && FD_ISSET(i, &write_set)){
+//                char send_data_arr[] = "yes,im z!";
+//                send_data(client,send_data_arr);
+//            }
+//        }
+
+
+
+         // rdset 中是委托内核检测的所有的文件描述符
 //         rdtemp = rdset;
 //         int num = select(maxfd+1, &rdtemp, NULL, NULL, NULL);
 //         // rdset 中的数据被内核改写了, 只保留了发生变化的文件描述的标志位上的1, 没变化的改为0
@@ -102,7 +148,8 @@ void main(){
 //                 }
 //             }
 //         }
-//     }
+        break;
+     }
 
 
 

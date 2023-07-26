@@ -15,6 +15,8 @@
 #include <sys/wait.h>
 #include <stdarg.h>
 
+#define max(x,y) ((x) > (y) ? (x) : (y))
+
 void  itoa(int num, char* str, int radix)
 {
     int i = 0;
@@ -82,6 +84,54 @@ int send_data(int socket, char *s) {
 
     myPrint("send_data:%s",s);
     return result;
+}
+
+char * recv_data(int client ,char* recvDataBuffer,int recvDataBufferNum ){
+//    int     recvDataBufferMax = 1024;//一次最多读取 1024 字节 数据
+//    char    recvDataBuffer[recvDataBufferMax];
+//    int     recvDataLen;
+
+//    一但 accept 函数成功 返回一个 client socketFD，就要立刻做 SOCKET IO 处理，要创建一个新的进程，避免阻塞
+//    pid_t pid = fork();
+//    myPrint("accept fork new process:");
+//    if(pid < 0){
+//        error("accept fork error",-9);
+//    }else if(pid == 0){
+//        myPrint("accept child process,start recv data......");
+        //接收数据缓冲区
+//            char final_recv_data[255];
+//            while(1){//这里不能循环，recv 会造成阻塞
+            int recvDataLen = recv(client, recvDataBuffer,recvDataBufferNum, 0);//阻塞接收客户端的数据
+            myPrint("recvDataLen:%d",recvDataLen);
+            if(recvDataLen < 0)
+            {
+                error("recv error",-6);
+//                    break;
+            }
+
+            if(recvDataLen == 0){
+                myPrint("recv client data end");
+                error("recvDataLen == 0",-7);
+//                    break;
+            }
+
+//            if(recvDataLen > recvDataBufferMax ){//客户端一次发送过来的数据，大于 buffer
+//                error("recvDataLen > recvDataBufferMax",-8);
+//            }
+//                printf("strcat data \n");
+//                strcat(final_recv_data,buffer);
+//            }
+            myPrint("recv  data:%s",recvDataBuffer);
+//            int sleepSecond = 10;
+//            myPrint("sleep:%d",sleepSecond);
+//            sleep(sleepSecond);
+        //printf("recv_str_num:%d,recv data is: %s,send_data:%s\n", strlen(final_recv_data), final_recv_data,"yes!");
+//    }else{
+//        myPrint("fork , im father ,nothing to do...");//父进程，不做任何操作，返回
+
+//    }
+
+    return recvDataBuffer;
 }
 
 /*
